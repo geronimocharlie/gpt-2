@@ -6,8 +6,12 @@ import os
 import numpy as np
 import tensorflow.compat.v1 as tf
 
-import model, sample, encoder
-
+try:
+    import model, sample, encoder
+except ModuleNotFoundError:
+    import src.model as model
+    import src.sample as sample
+    
 def interact_model(
     model_name='124M',
     seed=None,
