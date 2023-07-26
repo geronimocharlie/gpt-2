@@ -25,8 +25,10 @@ if tf.VERSION >= '2':
                                                   })
 
 
-import model, sample, encoder
-from load_dataset import load_dataset, Sampler
+import src.model as model
+import src.sample as sample
+import src.encoder as encoder
+from src.load_dataset import load_dataset, Sampler
 
 CHECKPOINT_DIR = 'checkpoint'
 SAMPLE_DIR = 'samples'
@@ -98,7 +100,7 @@ def main():
     with tf.Session() as sess:
         # Fully static shape required to make memory accounting in
         # twremat accurate.
-        train_context = tf.placeholder(tf.int32, [args.batch_size, 1024])
+        train_context = tf.placeholder(tf.int32, [args.batch_size, args.sample_length])
         train_context_in = randomize(train_context, hparams, args.noise)
         train_output = model.model(hparams=hparams, X=train_context_in)
         train_loss = tf.reduce_mean(
@@ -202,7 +204,7 @@ def main():
             # Sample from validation set once with fixed seed to make
             # it deterministic during training as well as across runs.
             val_data_sampler = Sampler(val_chunks, seed=1)
-            val_batches = [[val_data_sampler.sample(1024) for _ in range(args.val_batch_size)]
+            val_batches = [[val_data_sampler.sample(args.sample_length) for _ in range(args.val_batch_size)]
                            for _ in range(args.val_batch_count)]
 
         counter = 1
@@ -265,7 +267,7 @@ def main():
                     loss=v_val_loss))
 
         def sample_batch():
-            return [data_sampler.sample(1024) for _ in range(args.batch_size)]
+            return [data_sampler.sample(args.sample_length) for _ in range(args.batch_size)]
 
 
         avg_loss = (0.0, 0.0)
